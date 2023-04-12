@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+    web:
+      build: ./config/
+      command: python manage.py runserver 0.0.0.0:8000
+      restart: always
+      depends_on:
+        - database
+      volumes:
+        - ./config/environment/.env:/var/www/html/.env
+      ports:
+        - '1104:8000'
+      networks:
+        - gateway_sms
+
+    database:
+      image: postgres:12.1
+      restart: always
+#      ports:
+#        - "2432:5432"
+      volumes:
+        - ./data:/var/lib/postgresql/data
+#        - ./scripts/:/docker-entrypoint-initdb.d/
+      environment:
+        # Setting postgresql credentials
+        - POSTGRES_USER
+        - POSTGRES_PASSWORD
+        - POSTGRES_DB=gatewaysmsdb
+      networks:
+        - gateway_sms
+
+networks:
+  gateway_sms:
+   # Use a custom driver
+   driver: bridge
+   ipam:
+    config:
+     - subnet: 172.20.20.10/26
+       gateway: 172.20.20.1
